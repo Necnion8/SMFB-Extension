@@ -1,0 +1,4 @@
+name: SMFB-ext
+version: @version@
+main: com.gmail.necnionch.myplugin.smfbextension.SMFBExtension
+depends: [SMFBCore]
