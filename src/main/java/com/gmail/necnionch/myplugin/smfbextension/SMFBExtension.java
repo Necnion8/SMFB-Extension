@@ -28,18 +28,19 @@ import java.util.regex.Pattern;
 public final class SMFBExtension extends Plugin implements Listener {
     public static final String PREFIX = "&4[&c&lSMFB&cExt&4] &r";
     public static final String PERMS_SHOW_ERRORS = "smfbextension.show-errors";
+    private final SMFBExtConfig mainConfig = new SMFBExtConfig(this);
     private Smfb_core svrMgr;
 
     @Override
-    public void onLoad() {
+    public void onEnable() {
+        mainConfig.load();
+
         Plugin tmp = getProxy().getPluginManager().getPlugin("SMFBCore");
         svrMgr = (Smfb_core) tmp;
 
-
         getProxy().getPluginManager().registerCommand(this, new SMFBExtCommand(this));
         getProxy().getPluginManager().registerListener(this, this);
-        
-        
+
     }
 
     public Server getServer(String id) {
@@ -176,19 +177,6 @@ public final class SMFBExtension extends Plugin implements Listener {
     }
 
 
-//    @EventHandler
-//    public void onLogin(PostLoginEvent event) {
-//        getLogger().info("getPlayers().size(): " + getProxy().getPlayers().size());
-//        getLogger().info("getOnlineCount(): " + getProxy().getOnlineCount());
-//    }
-//
-//    @EventHandler
-//    public void onLogout(PlayerDisconnectEvent event) {
-//        getLogger().info("getPlayers().size(): " + getProxy().getPlayers().size());
-//        getLogger().info("getOnlineCount(): " + getProxy().getOnlineCount());
-//    }
-
-
     @EventHandler
     public void onPreStart(ServerPreStartEvent event) {
         if (event.isCancelled())
@@ -231,10 +219,10 @@ public final class SMFBExtension extends Plugin implements Listener {
         GlobalMemory memory = new SystemInfo().getHardware().getMemory();
         long total = memory.getTotal() / 1024 / 1024;
         // システム搭載メモリの12.5%を確保する
-        double available = (memory.getAvailable() / 1024d / 1024) - (total * 0.125);
+        double available = (memory.getAvailable() / 1024d / 1024) - (total * mainConfig.getFreeValue());
 
         // 要求: Xmx指定の1.3倍サイズ
-        double required = maxMemory * 1.3;
+        double required = maxMemory * mainConfig.getRequireValue();
 
         double freeText = Math.round(available / 1024d * 10) / 10d;
         double requireText = Math.round(required / 1024 * 10) / 10d;
@@ -274,6 +262,17 @@ public final class SMFBExtension extends Plugin implements Listener {
             }
         }
         return -1;
+    }
+
+    public double getSystemFreeMemory() {
+        GlobalMemory memory = new SystemInfo().getHardware().getMemory();
+        long total = memory.getTotal() / 1024 / 1024;
+        // システム搭載メモリの12.5%を確保する
+        return (memory.getAvailable() / 1024d / 1024) - (total * mainConfig.getFreeValue());
+    }
+
+    public double getSystemTotalMemory() {
+        return new SystemInfo().getHardware().getMemory().getTotal() / 1024d / 1024;
     }
 
 }

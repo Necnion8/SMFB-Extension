@@ -162,6 +162,12 @@ public class SMFBExtCommand extends Command {
                 sender.sendMessage(fmt("&cサーバーが見つかりません。"));
             }
 
+        } else if (args.equal(0, "freeMemory")) {
+            double free = pl.getSystemFreeMemory();
+            double total = pl.getSystemTotalMemory();
+            double freeText = Math.round(free / 1024d * 10) / 10d;
+            sender.sendMessage(fmt("&cシステムの空きメモリ: &6" + freeText + " GB &7(" + (Math.round(free / total * 1000) / 10) + "%)"));
+
         } else if (args.equal(0, "reload")) {
             boolean result = pl.reloadServerConfig();
             if (result) {
@@ -175,6 +181,7 @@ public class SMFBExtCommand extends Command {
             sender.sendMessage(fmt("/smfbext <started/switching> (serverId) <true/false>"));
             sender.sendMessage(fmt("/smfbext lobbyCheck"));
             sender.sendMessage(fmt("/smfbext setLobby (serverId)"));
+            sender.sendMessage(fmt("/smfbext freeMemory"));
             sender.sendMessage(fmt("/smfbext reload"));
         }
 
