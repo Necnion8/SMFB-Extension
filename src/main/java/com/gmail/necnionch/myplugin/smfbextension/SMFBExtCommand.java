@@ -168,6 +168,28 @@ public class SMFBExtCommand extends Command {
             double freeText = Math.round(free / 1024d * 10) / 10d;
             sender.sendMessage(fmt("&cシステムの空きメモリ: &6" + freeText + " GB &7(" + (Math.round(free / total * 1000) / 10) + "%)"));
 
+        } else if (args.equal(0, "restart") && args.length >= 2) {
+            Server server = Server.getServerByID(args.get(1, null));
+            if (server == null) {
+                sender.sendMessage(fmt("&cサーバーが見つかりません。"));
+                return;
+            }
+
+            if (server.Started) {
+                if (SMFBExtension.RESTART_FLAGS.add(server)) {
+                    sender.sendMessage(fmt("&6" + server.ID + " サーバーを再起動します。"));
+
+                    if (!server.Switching)
+                        server.StopServer();
+                } else {
+                    SMFBExtension.RESTART_FLAGS.remove(server);
+                    sender.sendMessage(fmt("&e" + server.ID + " サーバーの再起動フラグを解除しました。"));
+                }
+
+            } else {
+                pl.getProxy().getPluginManager().dispatchCommand(sender, "smfb start " + server.ID);
+            }
+
         } else if (args.equal(0, "reload")) {
             boolean result = pl.reloadServerConfig();
             if (result) {
@@ -182,6 +204,7 @@ public class SMFBExtCommand extends Command {
             sender.sendMessage(fmt("/smfbext lobbyCheck"));
             sender.sendMessage(fmt("/smfbext setLobby (serverId)"));
             sender.sendMessage(fmt("/smfbext freeMemory"));
+            sender.sendMessage(fmt("/smfbext restart (serverId)"));
             sender.sendMessage(fmt("/smfbext reload"));
         }
 

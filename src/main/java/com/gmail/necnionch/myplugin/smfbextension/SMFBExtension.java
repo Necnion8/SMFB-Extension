@@ -3,9 +3,11 @@ package com.gmail.necnionch.myplugin.smfbextension;
 import com.github.nova_27.mcplugin.servermanager.core.Smfb_core;
 import com.github.nova_27.mcplugin.servermanager.core.config.ConfigData;
 import com.github.nova_27.mcplugin.servermanager.core.config.Server;
+import com.github.nova_27.mcplugin.servermanager.core.events.ServerEvent;
 import com.github.nova_27.mcplugin.servermanager.core.events.ServerPreStartEvent;
 import com.github.nova_27.mcplugin.servermanager.core.utils.Requester;
 import com.gmail.necnionch.myplugin.smfbextension.errors.MemoryArgumentParseError;
+import com.google.common.collect.Sets;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.plugin.Listener;
@@ -29,6 +31,7 @@ public final class SMFBExtension extends Plugin implements Listener {
     public static final String PREFIX = "&4[&c&lSMFB&cExt&4] &r";
     public static final String PERMS_SHOW_ERRORS = "smfbextension.show-errors";
     private final SMFBExtConfig mainConfig = new SMFBExtConfig(this);
+    public static final Set<Server> RESTART_FLAGS = Sets.newHashSet();
     private Smfb_core svrMgr;
 
     @Override
@@ -206,6 +209,27 @@ public final class SMFBExtension extends Plugin implements Listener {
             }
         }
 
+    }
+
+    @EventHandler
+    public void onServerEvent(ServerEvent event) {
+        switch (event.getEventType()) {
+            case ServerDisabled:
+            case ServerStarting:
+            case ServerStarted:
+            case ServerErrorHappened: {
+                // remove flag
+                RESTART_FLAGS.remove(event.getServer());
+                break;
+            }
+            case ServerStopped: {
+                // restart by flag
+                if (RESTART_FLAGS.remove(event.getServer())) {
+                    getLogger().info("Flagged restart: " + event.getServer().ID);
+                    event.getServer().StartServer(Requester.of(this));
+                }
+            }
+        }
     }
 
     public double checkFreeMemory(Server server) throws MemoryArgumentParseError {
