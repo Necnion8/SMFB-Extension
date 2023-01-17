@@ -331,7 +331,7 @@ public final class SMFBExtension extends Plugin implements Listener {
             return;
 
         Server server = getServer(event.getTarget().getName());
-        if (server == null || (server.Started && server.Switching))
+        if (server == null || !(server.Started && server.Switching))
             return;
 
         event.setCancelled(true);
