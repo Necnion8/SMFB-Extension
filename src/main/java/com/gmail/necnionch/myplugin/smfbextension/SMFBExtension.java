@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ServerConnectRequest;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -253,8 +254,14 @@ public final class SMFBExtension extends Plugin implements Listener {
                 }
             }
         }
-        // cancel waiters
-        serverConnectWaiters.values().removeIf(s -> s.getName().equals(event.getServer().ID));
+
+        switch (event.getEventType()) {
+            case ServerStarting:
+            case ServerStopped: {
+                // cancel waiters
+                serverConnectWaiters.values().removeIf(s -> s.getName().equals(event.getServer().ID));
+            }
+        }
     }
 
     public double checkFreeMemory(Server server) throws MemoryArgumentParseError {
@@ -341,7 +348,6 @@ public final class SMFBExtension extends Plugin implements Listener {
 
         player.sendMessage(new ComponentBuilder("現在、サーバーを起動しています。完了したら自動的に接続されます。")
                 .color(ChatColor.GOLD).create());
-
         serverConnectWaiters.put(player, event.getTarget());
     }
 
