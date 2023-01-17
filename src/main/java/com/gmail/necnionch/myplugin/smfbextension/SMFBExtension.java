@@ -7,15 +7,23 @@ import com.github.nova_27.mcplugin.servermanager.core.events.ServerEvent;
 import com.github.nova_27.mcplugin.servermanager.core.events.ServerPreStartEvent;
 import com.github.nova_27.mcplugin.servermanager.core.utils.Requester;
 import com.gmail.necnionch.myplugin.smfbextension.errors.MemoryArgumentParseError;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.event.EventPriority;
 import oshi.SystemInfo;
 import oshi.hardware.GlobalMemory;
 
@@ -214,9 +222,22 @@ public final class SMFBExtension extends Plugin implements Listener {
     @EventHandler
     public void onServerEvent(ServerEvent event) {
         switch (event.getEventType()) {
+            case ServerStarted: {
+                // waiters
+                try {
+                    serverConnectWaiters.entrySet().removeIf(e -> {
+                        if (e.getValue().getName().equals(event.getServer().ID)) {
+                            e.getKey().connect(e.getValue());
+                            return true;
+                        }
+                        return false;
+                    });
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
             case ServerDisabled:
             case ServerStarting:
-            case ServerStarted:
             case ServerErrorHappened: {
                 // remove flag
                 RESTART_FLAGS.remove(event.getServer());
@@ -230,6 +251,8 @@ public final class SMFBExtension extends Plugin implements Listener {
                 }
             }
         }
+        // cancel waiters
+        serverConnectWaiters.values().removeIf(s -> s.getName().equals(event.getServer().ID));
     }
 
     public double checkFreeMemory(Server server) throws MemoryArgumentParseError {
@@ -297,6 +320,37 @@ public final class SMFBExtension extends Plugin implements Listener {
 
     public double getSystemTotalMemory() {
         return new SystemInfo().getHardware().getMemory().getTotal() / 1024d / 1024;
+    }
+
+
+    private final Map<ProxiedPlayer, ServerInfo> serverConnectWaiters = Maps.newHashMap();
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onConnect(ServerConnectEvent event) {
+        if (event.isCancelled() || !mainConfig.isTryReconnectInStartingServer())
+            return;
+
+        Server server = getServer(event.getTarget().getName());
+        if (server == null || (server.Started && server.Switching))
+            return;
+
+        event.setCancelled(true);
+        ProxiedPlayer player = event.getPlayer();
+
+        player.sendMessage(new ComponentBuilder("現在、サーバーを起動しています。完了したら自動的に接続されます。")
+                .color(ChatColor.GOLD).create());
+
+        serverConnectWaiters.put(player, event.getTarget());
+    }
+
+    @EventHandler
+    public void onConnected(ServerConnectedEvent event) {
+        serverConnectWaiters.remove(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onDisconnected(PlayerDisconnectEvent event) {
+        serverConnectWaiters.remove(event.getPlayer());
     }
 
 }

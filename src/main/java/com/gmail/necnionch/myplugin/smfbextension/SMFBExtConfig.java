@@ -15,4 +15,8 @@ public class SMFBExtConfig extends BungeeConfigDriver {
         return config.getFloat("free-value", 0.125f);
     }
 
+    public boolean isTryReconnectInStartingServer() {
+        return config.getBoolean("try-reconnect-in-starting-server", true);
+    }
+
 }

@@ -1,2 +1,4 @@
 require-value: 1.5
 free-value: 0.125
+
+try-reconnect-in-starting-server: true
