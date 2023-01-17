@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -247,7 +248,8 @@ public final class SMFBExtension extends Plugin implements Listener {
                 // restart by flag
                 if (RESTART_FLAGS.remove(event.getServer())) {
                     getLogger().info("Flagged restart: " + event.getServer().ID);
-                    event.getServer().StartServer(Requester.of(this));
+                    getProxy().getScheduler().schedule(this, () ->
+                            event.getServer().StartServer(Requester.of(this)), 10, TimeUnit.MILLISECONDS);
                 }
             }
         }
