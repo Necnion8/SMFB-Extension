@@ -64,6 +64,16 @@ public class SMFBExtCommand extends Command {
             }
             sender.sendMessage(fmt("  &7timer     : &f" + tmp));
 
+            int closeTime = ConfigData.CloseTime;
+            tmp = String.valueOf(closeTime);
+            try {
+                closeTime = pl.getServerCloseTime(server);
+                tmp = "&o" + closeTime + " &7(global " + tmp + ")";
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                tmp = "&o" + tmp + " &7(global)";
+            }
+            sender.sendMessage(fmt("  &7close-time: &f" + tmp));
+
 //            if (server.requests.isEmpty()) {
 //                sender.sendMessage(fmt("  &7requests  : &f&onone"));
 //            } else {

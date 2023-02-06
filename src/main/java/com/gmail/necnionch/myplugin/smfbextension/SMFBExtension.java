@@ -11,7 +11,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.ServerConnectRequest;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -84,6 +83,10 @@ public final class SMFBExtension extends Plugin implements Listener {
 
     String getServerDirectory(Server server) throws NoSuchFieldException, IllegalAccessException {
         return (String) getValue(server, "Dir");
+    }
+
+    int getServerCloseTime(Server server) throws NoSuchFieldException, IllegalAccessException {
+        return (int) getValue(server, "CloseTime");
     }
 
     public boolean reloadServerConfig() {
