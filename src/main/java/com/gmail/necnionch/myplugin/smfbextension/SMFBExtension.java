@@ -213,7 +213,7 @@ public final class SMFBExtension extends Plugin implements Listener {
             getLogger().warning("Out of memory! cancelling server start");
             event.setCancelled(true);
 
-            if (requester.getObject() instanceof CommandSender) {
+            if (requester != null && requester.getObject() instanceof CommandSender) {
                 CommandSender sender = (CommandSender) requester.getObject();
                 String message = "サーバーを起動できません。";
                 message += (sender.hasPermission(PERMS_SHOW_ERRORS))
