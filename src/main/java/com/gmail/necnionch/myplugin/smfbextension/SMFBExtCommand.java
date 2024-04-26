@@ -8,11 +8,13 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-public class SMFBExtCommand extends Command {
+public class SMFBExtCommand extends Command implements TabExecutor {
     private SMFBExtension pl;
 
     public SMFBExtCommand(SMFBExtension plugin) {
@@ -220,6 +222,31 @@ public class SMFBExtCommand extends Command {
 
     }
 
+    @Override
+    public Iterable<String> onTabComplete(CommandSender sender, String[] argument) {
+        Argument args = new Argument(argument);
+
+        if (args.length == 1) {
+            return suggests(args.get(0, null), Arrays.asList(
+                    "info", "started", "switching", "lobbyCheck", "setLobby", "freeMemory", "restart", "reload"
+            ));
+
+        } else if (args.equal(0, "info") || args.equal(0, "setLobby") || args.equal(0, "restart")) {
+            if (args.length == 2) {
+                return suggests(args.get(1, null), pl.getServerIds());
+            }
+
+        } else if (args.equal(0, "started") || args.equal(0, "switching")) {
+            if (args.length == 2) {
+                return suggests(args.get(1, null), pl.getServerIds());
+            } else if (args.length == 3) {
+                return suggests(args.get(2, null), Arrays.asList("true", "false"));
+            }
+
+        }
+        return Collections.emptyList();
+    }
+
     private BaseComponent[] fmt(String message) {
         String prefix = SMFBExtension.PREFIX;
         return TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&',
@@ -227,5 +254,13 @@ public class SMFBExtCommand extends Command {
         ));
     }
 
+    private List<String> suggests(String input, Iterable<String> values) {
+        if (input == null)
+            return Collections.emptyList();
+        String inputValue = input.toLowerCase();
+        return StreamSupport.stream(values.spliterator(), false)
+                .filter(v -> v.toLowerCase().startsWith(inputValue))
+                .collect(Collectors.toList());
+    }
 
 }

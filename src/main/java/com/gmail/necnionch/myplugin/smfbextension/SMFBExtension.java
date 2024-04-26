@@ -34,6 +34,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public final class SMFBExtension extends Plugin implements Listener {
@@ -61,6 +63,10 @@ public final class SMFBExtension extends Plugin implements Listener {
                 return server;
         }
         return null;
+    }
+
+    public Collection<String> getServerIds() {
+        return Stream.of(ConfigData.Servers).map(s -> s.ID).collect(Collectors.toSet());
     }
 
     private Object getValue(Server server, String fieldName) throws NoSuchFieldException, IllegalAccessException {
